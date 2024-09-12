@@ -1,0 +1,5 @@
+.idea
+file
+*.conf
+*.pdf
+venv
