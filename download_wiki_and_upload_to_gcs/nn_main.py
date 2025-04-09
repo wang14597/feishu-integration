@@ -3,12 +3,13 @@ import json
 import requests
 
 import lark_oapi as lark
+from google.cloud import storage
 from lark_oapi.api.auth.v3 import InternalTenantAccessTokenRequest, InternalTenantAccessTokenRequestBody, \
     InternalTenantAccessTokenResponse
 from lark_oapi.api.sheets.v3 import QuerySpreadsheetSheetRequest, QuerySpreadsheetSheetResponse
 
 from download_wiki_and_upload_to_gcs.client import create_lark_client
-from download_wiki_and_upload_to_gcs.conf import AUTH_INFO
+from download_wiki_and_upload_to_gcs.conf import AUTH_INFO, SERVICE_ACCOUNT, BUCKET_NAME
 
 
 def get_sheet(client, file_token):
@@ -110,15 +111,33 @@ def write_values_to_csv(data, output_file):
 
 def test_nn():
     file = "Vtr4spMdLhYU4ot1tVicEanKnmg"
+
+    # 创建client和获取http请求token
     client = create_lark_client()
     tenant_access_token = get_tenant_access_token(client)
+
+    # 获取每天最新的sheet_id
     sheets = get_sheet(client, file)
     sheets_data = json.loads(sheets)
     max_title_sheet = max(sheets_data["sheets"], key=lambda x: x["title"])
     newest_sheet_id = max_title_sheet["sheet_id"]
+
+    # 获取每天最新sheet_id的内容
     data = fetch_sheet_data(tenant_access_token, file, newest_sheet_id,"A:G")
+
+    # 将内容写入本地当前目录下的csv文件
     write_values_to_csv(data, "output.csv")
 
+    # 将本地的csv文件上传到GCS
+    storage_client = storage.Client.from_service_account_json(SERVICE_ACCOUNT)
+    bucket = storage_client.bucket(BUCKET_NAME)
+    blob = bucket.blob("output.csv")
+    blob.upload_from_file("output.csv")
+    storage_client.close()
+
+    # TODO 调用gemini分析打表
+
+    # TODO 分析完数据写入飞书电子表格
 
 if __name__ == '__main__':
     test_nn()
