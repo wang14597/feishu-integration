@@ -8,8 +8,8 @@ from lark_oapi.api.auth.v3 import InternalTenantAccessTokenRequest, InternalTena
     InternalTenantAccessTokenResponse
 from lark_oapi.api.sheets.v3 import QuerySpreadsheetSheetRequest, QuerySpreadsheetSheetResponse
 
-from download_wiki_and_upload_to_gcs.client import create_lark_client
-from download_wiki_and_upload_to_gcs.conf import AUTH_INFO, SERVICE_ACCOUNT, BUCKET_NAME
+from client import create_lark_client
+from conf import AUTH_INFO, SERVICE_ACCOUNT, BUCKET_NAME
 
 
 def get_sheet(client, file_token):

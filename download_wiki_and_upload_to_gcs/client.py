@@ -1,6 +1,6 @@
 import lark_oapi as lark
 
-from download_wiki_and_upload_to_gcs.conf import AUTH_INFO
+from conf import AUTH_INFO
 
 
 def create_lark_client():
